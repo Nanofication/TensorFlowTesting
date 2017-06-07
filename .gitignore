@@ -77,7 +77,7 @@ target/
 .python-version
 
 # pickle files
-.pickle
+*.pickle
 
 # celery beat schedule file
 celerybeat-schedule
