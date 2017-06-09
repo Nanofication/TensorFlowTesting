@@ -1,35 +1,33 @@
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
-
-lemmatizer = WordNetLemmatizer()
-
 import pickle
 import numpy as np
 import pandas as pd
 
-"""
+lemmatizer = WordNetLemmatizer()
 
-polarity 0 = negative. 2 = neutral. 4 = positive
+'''
+polarity 0 = negative. 2 = neutral. 4 = positive.
 id
 date
 query
 user
 tweet
+'''
 
-"""
 
 def init_process(fin, fout):
     outfile = open(fout, 'a')
     with open(fin, buffering=200000, encoding='latin-1') as f:
         try:
             for line in f:
-                line = line.replace('"','')
+                line = line.replace('"', '')
                 initial_polarity = line.split(',')[0]
                 if initial_polarity == '0':
-                    initial_polarity = [1,0]
+                    initial_polarity = [1, 0]
                 elif initial_polarity == '4':
-                    initial_polarity = [0,1]
+                    initial_polarity = [0, 1]
 
                 tweet = line.split(',')[-1]
                 outline = str(initial_polarity) + ':::' + tweet
@@ -37,6 +35,11 @@ def init_process(fin, fout):
         except Exception as e:
             print(str(e))
     outfile.close()
+
+
+init_process('training.1600000.processed.noemoticon.csv', 'train_set.csv')
+init_process('testdata.manual.2009.06.14.csv', 'test_set.csv')
+
 
 def create_lexicon(fin):
     lexicon = []
@@ -46,11 +49,11 @@ def create_lexicon(fin):
             content = ''
             for line in f:
                 counter += 1
-                if (counter/2500.0).is_integer():
+                if (counter / 2500.0).is_integer():
                     tweet = line.split(':::')[1]
                     content += ' ' + tweet
                     words = word_tokenize(content)
-                    words = [lemmatizer.lemmatize((i) for i in words)]
+                    words = [lemmatizer.lemmatize(i) for i in words]
                     lexicon = list(set(lexicon + words))
                     print(counter, len(lexicon))
 
@@ -58,11 +61,8 @@ def create_lexicon(fin):
             print(str(e))
 
     with open('lexicon-2500-2638.pickle', 'wb') as f:
-        pickle.dump(lexicon,f)
+        pickle.dump(lexicon, f)
 
-# Run these only once!
-init_process('training.1600000.processed.noemoticon.csv','train_set.csv')
-init_process('testdata.manual.2009.06.14.csv','test_set.csv')
 
 create_lexicon('train_set.csv')
 
@@ -112,11 +112,11 @@ def create_test_data_pickle(fin):
     feature_sets = []
     labels = []
     counter = 0
-    with open(fin, buffering= 20000) as f:
+    with open(fin, buffering=20000) as f:
         for line in f:
             try:
                 features = list(eval(line.split('::')[0]))
-                label = list(eval(list.split('::')[1]))
+                label = list(eval(line.split('::')[1]))
 
                 feature_sets.append(features)
                 labels.append(label)
@@ -126,5 +126,6 @@ def create_test_data_pickle(fin):
     print(counter)
     feature_sets = np.array(feature_sets)
     labels = np.array(labels)
+
 
 create_test_data_pickle('processed-test-set.csv')
